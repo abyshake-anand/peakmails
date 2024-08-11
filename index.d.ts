@@ -4,7 +4,6 @@ declare module 'peakmails-sdk' {
         domain: string;
         projectId: string;
         secretKey?: string;
-        baseUrl?: string;
     }
 
     export interface ContactData {

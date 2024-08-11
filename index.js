@@ -1,5 +1,4 @@
 const axios = require('axios');
-const crypto = require('crypto');
 /**
  * @class PeakmailsSDK
  * @description SDK for interacting with the Peakmails API
@@ -16,7 +15,7 @@ class PeakmailsSDK {
         if (!projectId || typeof projectId !== 'string') { throw new Error('Invalid project ID'); }
         if (secretKey && typeof secretKey !== 'string') { throw new Error('Invalid secret key'); }
         if (secretKey && secretKey.length !== 64) { throw new Error('Invalid secret key'); }
-        if (secretKey && getOrigin()) { throw new Error('Secret key can only be used in server-side environments'); }
+        if (secretKey && this.getOrigin()) { throw new Error('Secret key can only be used in server-side environments'); }
         this.apiKey = apiKey;
         this.domain = domain;
         this.projectId = projectId;
