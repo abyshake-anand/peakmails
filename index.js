@@ -14,6 +14,9 @@ class PeakmailsSDK {
         if (!apiKey || typeof apiKey !== 'string') { throw new Error('Invalid API key'); }
         if (!domain || typeof domain !== 'string') { throw new Error('Invalid domain'); }
         if (!projectId || typeof projectId !== 'string') { throw new Error('Invalid project ID'); }
+        if (secretKey && typeof secretKey !== 'string') { throw new Error('Invalid secret key'); }
+        if (secretKey && secretKey.length !== 64) { throw new Error('Invalid secret key'); }
+        if (secretKey && getOrigin()) { throw new Error('Secret key can only be used in server-side environments'); }
         this.apiKey = apiKey;
         this.domain = domain;
         this.projectId = projectId;
@@ -26,10 +29,6 @@ class PeakmailsSDK {
             return window.location.origin;
         }
         return null;
-    }
-
-    generateCSRFToken(origin) {
-        return crypto.createHash('sha256').update(`${this.apiKey}${origin}`).digest('hex');
     }
 
     /**
@@ -53,8 +52,6 @@ class PeakmailsSDK {
             throw new Error('Origin not found');
         }
 
-        const csrfToken = this.generateCSRFToken(origin);
-
         try {
             const response = await axios({
                 method,
@@ -64,11 +61,14 @@ class PeakmailsSDK {
                     'Content-Type': 'application/json',
                     'X-Peakmails-Domain': this.domain,
                     'X-Peakmails-Project': this.projectId,
-                    'X-Peakmails-Origin': origin,
-                    'X-Peakmails-CSRF-Token': csrfToken,
+                    'X-Peakmails-Origin': origin
                 },
                 data,
+                validateStatus: status => status < 500,
             });
+            if (response.status >= 400) {
+                throw new Error(`Peakmails API Error: ${response.status} - ${response.data.message}`);
+            }
             return response.data;
         } catch (error) {
             if (error.response) {
