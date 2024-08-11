@@ -1,6 +1,28 @@
 {
-  "name": "peakmails-npm",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT"
+    "name": "peakmails-sdk",
+    "version": "1.0.0",
+    "description": "Official SDK for Peakmails API",
+    "main": "peakmails-sdk.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "peakmails",
+        "email",
+        "marketing",
+        "sdk"
+    ],
+    "author": "Peakmails",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^0.21.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/abyshake-anand/peakmails-sdk.git"
+    },
+    "bugs": {
+        "url": "https://github.com/abyshake-anand/peakmails-sdk/issues"
+    },
+    "homepage": "https://github.com/abyshake-anand/peakmails-sdk#readme"
 }

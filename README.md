@@ -1,2 +1,1 @@
-# peakmails
 # peakmails-sdk
