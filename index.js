@@ -1,4 +1,5 @@
 const axios = require('axios');
+const crypto = require('crypto');
 /**
  * @class PeakmailsSDK
  * @description SDK for interacting with the Peakmails API
@@ -9,7 +10,7 @@ class PeakmailsSDK {
      * @param {string} apiKey - The API key for authentication
      * @param {string} domain - The domain associated with the Peakmails account
      */
-    constructor({ apiKey, domain, projectId }) {
+    constructor({ apiKey, domain, projectId, secretKey }) {
         if (!apiKey || typeof apiKey !== 'string') { throw new Error('Invalid API key'); }
         if (!domain || typeof domain !== 'string') { throw new Error('Invalid domain'); }
         if (!projectId || typeof projectId !== 'string') { throw new Error('Invalid project ID'); }
@@ -17,7 +18,20 @@ class PeakmailsSDK {
         this.domain = domain;
         this.projectId = projectId;
         this.baseUrl = 'https://peakmails.com/api/v1';
+        this.secretKey = secretKey;
     }
+
+    getOrigin() {
+        if (typeof window !== 'undefined' && window.location) {
+            return window.location.origin;
+        }
+        return null;
+    }
+
+    generateCSRFToken(origin) {
+        return crypto.createHash('sha256').update(`${this.apiKey}${origin}`).digest('hex');
+    }
+
     /**
      * @private
      * @method request
@@ -29,6 +43,18 @@ class PeakmailsSDK {
      * @throws {Error} If the API request fails
      */
     async request(method, endpoint, data = {}) {
+        let origin = null;
+        if (this.secretKey) {
+            origin = 'backend-implementation';
+        } else {
+            origin = this.getOrigin();
+        }
+        if (!origin) {
+            throw new Error('Origin not found');
+        }
+
+        const csrfToken = this.generateCSRFToken(origin);
+
         try {
             const response = await axios({
                 method,
@@ -38,6 +64,8 @@ class PeakmailsSDK {
                     'Content-Type': 'application/json',
                     'X-Peakmails-Domain': this.domain,
                     'X-Peakmails-Project': this.projectId,
+                    'X-Peakmails-Origin': origin,
+                    'X-Peakmails-CSRF-Token': csrfToken,
                 },
                 data,
             });
@@ -93,7 +121,7 @@ class PeakmailsSDK {
      * @param {string} email - The email address of the contact
      * @returns {Promise<Object>} The result of the scenario trigger
      */
-    async triggerScenario({ scenario, email}) {
+    async triggerScenario({ scenario, email }) {
         if (!scenario || typeof scenario !== 'string') {
             throw new Error('Invalid scenario ID');
         }
