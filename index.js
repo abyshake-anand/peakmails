@@ -15,7 +15,6 @@ class PeakmailsSDK {
         this.apiKey = apiKey; this.domain = domain;
         this.baseUrl = 'https://api.peakmails.com/v1'; // Replace with your actual API base URL
     }
-
     /**
      * @private
      * @method request
