@@ -9,11 +9,14 @@ class PeakmailsSDK {
      * @param {string} apiKey - The API key for authentication
      * @param {string} domain - The domain associated with the Peakmails account
      */
-    constructor({ apiKey, domain }) {
+    constructor({ apiKey, domain, projectId }) {
         if (!apiKey || typeof apiKey !== 'string') { throw new Error('Invalid API key'); }
         if (!domain || typeof domain !== 'string') { throw new Error('Invalid domain'); }
-        this.apiKey = apiKey; this.domain = domain;
-        this.baseUrl = 'https://api.peakmails.com/v1'; // Replace with your actual API base URL
+        if (!projectId || typeof projectId !== 'string') { throw new Error('Invalid project ID'); }
+        this.apiKey = apiKey;
+        this.domain = domain;
+        this.projectId = projectId;
+        this.baseUrl = 'https://peakmails.com/api/v1';
     }
     /**
      * @private
@@ -33,7 +36,8 @@ class PeakmailsSDK {
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Content-Type': 'application/json',
-                    'X-Peakmails-Domain': this.domain
+                    'X-Peakmails-Domain': this.domain,
+                    'X-Peakmails-Project': this.projectId,
                 },
                 data,
             });
@@ -62,93 +66,54 @@ class PeakmailsSDK {
         if (!contactData.email || typeof contactData.email !== 'string') {
             throw new Error('Invalid email address');
         }
-        return this.request('POST', '/contacts', contactData);
+        return this.request('POST', '/add-contact', contactData);
     }
 
     /**
      * @method addContactToCategories
      * @description Add a contact to one or more categories
-     * @param {string} contactId - The ID of the contact
-     * @param {string[]} categoryIds - An array of category IDs
+     * @param {string} email - The email address of the contact
+     * @param {string[]} categories - An array of category IDs
      * @returns {Promise<Object>} The updated contact object
      */
-    async addContactToCategories(contactId, categoryIds) {
-        if (!contactId || typeof contactId !== 'string') {
-            throw new Error('Invalid contact ID');
+    async addContactToCategories({ email, categories }) {
+        if (!email || typeof email !== 'string') {
+            throw new Error('Invalid email address');
         }
-        if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
+        if (!Array.isArray(categories) || categories.length === 0) {
             throw new Error('Invalid category IDs');
         }
-        return this.request('POST', `/contacts/${contactId}/categories`, { categoryIds });
+        return this.request('POST', `/add-contact-to-category`, { email, categories });
     }
 
     /**
      * @method triggerScenario
      * @description Trigger a scenario for a specific contact
-     * @param {string} scenarioId - The ID of the scenario to trigger
-     * @param {string} contactId - The ID of the contact
+     * @param {string} scenario - The ID of the scenario to trigger
+     * @param {string} email - The email address of the contact
      * @returns {Promise<Object>} The result of the scenario trigger
      */
-    async triggerScenario(scenarioId, contactId) {
-        if (!scenarioId || typeof scenarioId !== 'string') {
+    async triggerScenario({ scenario, email}) {
+        if (!scenario || typeof scenario !== 'string') {
             throw new Error('Invalid scenario ID');
         }
-        if (!contactId || typeof contactId !== 'string') {
-            throw new Error('Invalid contact ID');
+        if (!email || typeof email !== 'string') {
+            throw new Error('Invalid email address');
         }
-        return this.request('POST', `/scenarios/${scenarioId}/trigger`, { contactId });
-    }
-
-    /**
-     * @method getScenarios
-     * @description Get a list of all scenarios
-     * @param {Object} [options] - Optional parameters
-     * @param {number} [options.page] - Page number for pagination
-     * @param {number} [options.limit] - Number of items per page
-     * @returns {Promise<Object>} The list of scenarios
-     */
-    async getScenarios(options = {}) {
-        const queryParams = new URLSearchParams(options).toString();
-        return this.request('GET', `/scenarios${queryParams ? `?${queryParams}` : ''}`);
+        return this.request('POST', `/trigger-scenario`, { scenario, email });
     }
 
     /**
      * @method getScenarioCustomFields
      * @description Get the custom fields for a particular scenario
-     * @param {string} scenarioId - The ID of the scenario
+     * @param {string} scenario - The ID of the scenario
      * @returns {Promise<Object>} The custom fields for the scenario
      */
-    async getScenarioCustomFields(scenarioId) {
-        if (!scenarioId || typeof scenarioId !== 'string') {
+    async getScenarioCustomFields({ scenario }) {
+        if (!scenario || typeof scenario !== 'string') {
             throw new Error('Invalid scenario ID');
         }
-        return this.request('GET', `/scenarios/${scenarioId}/custom-fields`);
-    }
-
-    /**
-     * @method getCategories
-     * @description Get a list of all categories
-     * @param {Object} [options] - Optional parameters
-     * @param {number} [options.page] - Page number for pagination
-     * @param {number} [options.limit] - Number of items per page
-     * @returns {Promise<Object>} The list of categories
-     */
-    async getCategories(options = {}) {
-        const queryParams = new URLSearchParams(options).toString();
-        return this.request('GET', `/categories${queryParams ? `?${queryParams}` : ''}`);
-    }
-
-    /**
-     * @method getContactDetails
-     * @description Get details of a specific contact
-     * @param {string} contactId - The ID of the contact
-     * @returns {Promise<Object>} The contact details
-     */
-    async getContactDetails(contactId) {
-        if (!contactId || typeof contactId !== 'string') {
-            throw new Error('Invalid contact ID');
-        }
-        return this.request('GET', `/contacts/${contactId}`);
+        return this.request('GET', `/get-scenario-custom-fields?scenario=${scenario}`);
     }
 }
 
