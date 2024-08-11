@@ -1,5 +1,5 @@
 {
-    "name": "peakmails-sdk",
+    "name": "peakmails",
     "version": "1.0.0",
     "description": "Official SDK for Peakmails API",
     "main": "index.js",
